@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Types
@@ -32,7 +33,17 @@ func main() {
 			log.Fatal(err.Error())
 		}
 
-		fmt.Printf("name: %v | password: %v\n", signUpRequest.Name, signUpRequest.Password)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(signUpRequest.Password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Fatalf("Error hashing password: %v", err)
+		}
+
+		// TODO: Handle Password Mismatch
+		if err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(signUpRequest.Password)); err != nil {
+			fmt.Println("The Password doesn't match")
+		}
+
+		fmt.Printf("name: %v | password: %v | hashedPassword: %s\n", signUpRequest.Name, signUpRequest.Password, hashedPassword)
 		c.JSON(http.StatusOK, SignUpResponseBody{
 			Body: "Sign Up Confirmed",
 		})
