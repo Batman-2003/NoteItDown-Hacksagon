@@ -25,7 +25,7 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE,
+            username TEXT UNIQUE,
             passHsh TEXT
         );
     """)
@@ -63,12 +63,39 @@ def verify_password(password, hashedPassword):
 
 def authenticate_user(username: str, password: str):
     # TODO: user in users table -> pick username + passHash
-    # ! FIXME: TEMPORARY HARDCODE
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    # TODO: Optimize {TRY ATLEAST !!!!!} ... will need to add some err handling before
+    cursor.execute(f"""
+            SELECT * FROM users;
+    """)
+    # conn.commit()
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    USERNAME_COLUMN_INDEX = 1
+    passHsh = None
+    if len(rows) > 0:
+        for row in rows:
+            if row[USERNAME_COLUMN_INDEX] == username:
+                passHsh = row[USERNAME_COLUMN_INDEX+1]
+                break
+
+    else:
+        return {"Error": "User not registered"}
+    
+
+    # user = {
+    #     "username": username,
+    #     "passwordHash": pwd_context.hash(username)
+    # } 
 
     user = {
-        "username": "gaurav",
-        "passwordHash": pwd_context.hash(username)
-    } 
+        "username": username,
+        "passwordHash": passHsh
+    }
+
     if not user or not verify_password(password, user["passwordHash"]):
         return None
     return user
@@ -99,7 +126,7 @@ def signup(signUp: CredentialsH):
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
     # cursor.execute("INSERT INTO users (name, passHsh) VALUES (?, ?)", (signUp.username, str(bcrypt.hashpw(bytes(signUp.password, "UTF-8"), bcrypt.gensalt()))))
-    cursor.execute("INSERT INTO users (name, passHsh) VALUES (?, ?)", (signUp.username, pwd_context.hash(signUp.password)))
+    cursor.execute("INSERT INTO users (username, passHsh) VALUES (?, ?)", (signUp.username, pwd_context.hash(signUp.password)))
     conn.commit()
     conn.close()
 
