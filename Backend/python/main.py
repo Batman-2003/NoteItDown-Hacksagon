@@ -1,69 +1,8 @@
-# import sqlite3
-# import bcrypt
-
-# from fastapi import FastAPI
-# from pydantic import BaseModel
-
-# api = FastAPI()
-
-# class SignUp(BaseModel):
-#     name: str
-#     password: str
-
-# def init_db():
-#     conn = sqlite3.connect("users.db")
-#     cursor = conn.cursor()
-#     cursor.execute("""
-#         CREATE TABLE IF NOT EXISTS users(
-#             name TEXT,
-#             passHsh TEXT
-#         );
-#     """)
-#     conn.commit()
-#     conn.close()
-
-# init_db()
-
-
-# @api.post('/signup')
-# def signup(signUp: SignUp):
-#     conn = sqlite3.connect("users.db")
-#     cursor = conn.cursor()
-#     cursor.execute("INSERT INTO users (name, passHsh) VALUES (?, ?)", (signUp.name, str(bcrypt.hashpw(bytes(signUp.password, "UTF-8"), bcrypt.gensalt()))))
-#     conn.commit()
-#     conn.close()
-
-#     return {
-#         "name": signUp.name,
-#         "pass": signUp.password
-#     }
-
-
-# @api.get('/')
-# def index():
-#     return {"data": "File in String format"}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import sqlite3
 
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -80,6 +19,30 @@ class CredentialsH(BaseModel):
 
 # DB
 
+def init_db():
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE,
+            passHsh TEXT
+        );
+    """)
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            filename TEXT,
+            data TEXT
+        );
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
 
 
 
@@ -99,8 +62,9 @@ def verify_password(password, hashedPassword):
     return pwd_context.verify(password, hashedPassword)
 
 def authenticate_user(username: str, password: str):
-    # TODO: user in usernames?
+    # TODO: user in users table -> pick username + passHash
     # ! FIXME: TEMPORARY HARDCODE
+
     user = {
         "username": "gaurav",
         "passwordHash": pwd_context.hash(username)
@@ -129,6 +93,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 # Routing
 
+@api.post('/signup')
+# TODO: add graceful error handling for failing UNIQUE Constraint
+def signup(signUp: CredentialsH):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    # cursor.execute("INSERT INTO users (name, passHsh) VALUES (?, ?)", (signUp.username, str(bcrypt.hashpw(bytes(signUp.password, "UTF-8"), bcrypt.gensalt()))))
+    cursor.execute("INSERT INTO users (name, passHsh) VALUES (?, ?)", (signUp.username, pwd_context.hash(signUp.password)))
+    conn.commit()
+    conn.close()
+
+    return f"{signUp.username} Registered Successfully"
+
 @api.post("/login")
 def login(form_data: CredentialsH):
     # return {"msg": "msg"}
@@ -140,3 +116,17 @@ def login(form_data: CredentialsH):
         )
     access_token = create_access_token(data={"sub": user["username"]})  # ? Learning
     return {"access_token": access_token, "token_type": "bearer"}
+
+# TODO: "/application"
+@api.post("/application/{userName}")
+def read_protected(token: str = Depends(oauth2_scheme), userName: str = ""):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    
+    # TODO: Find all files of 
+    return {"message": f"Hello, {username} / {userName}. Thou are allowed to proceed!"}
