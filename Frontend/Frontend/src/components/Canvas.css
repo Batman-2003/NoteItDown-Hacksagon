@@ -1,0 +1,58 @@
+html{
+    background-color: white;
+    color: white;
+}
+canvas{
+    touch-action: none;
+    background-color: white;
+    /* border: 1px gray solid; */
+    /* border-radius: 20px; */
+    /* height: 100vh; */
+    /* width: 100vw; */
+}
+.toolbar{
+    position: fixed;
+    left:2vw;
+    translate: -1vw;
+    top: 1vh;
+    padding: 10px;
+    background-color: transparent;
+    backdrop-filter: blur(2px);
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    box-shadow: #aaa 0 0 10px;
+    flex-direction: column;
+}
+.toolbar button{
+    margin-top: 0;
+    background-color: transparent;
+    color: black;
+    border: none;
+    display: flex;
+    padding: 5px;
+    border-radius: 10px;
+}
+.text-dialog{
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    gap:0.5vw;
+}
+.text-dialog textarea{
+    /* border-radius: 35px; */
+    border: 1px solid black;
+    /* padding: 5px; */
+    /* resize: both; */
+    font-family: 'Courier New', Courier, monospace;
+}
+.text-dialog button{
+    border: none;
+    border-radius: 210px;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+}

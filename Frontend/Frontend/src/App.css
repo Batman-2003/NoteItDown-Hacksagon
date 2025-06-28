@@ -1,0 +1,26 @@
+.nav-bar{
+  position: fixed;
+  left: 50%;
+  bottom: 0.6vh;
+  translate: -50%;
+  display: flex;
+  justify-content: space-evenly;
+  width: fit-content;
+  min-width: 20vw;
+}
+.nav-bar button{
+  background-color: #eee;
+  border: none;
+  color: #000;
+  border-radius: 10px;
+}
+
+@media (max-width:786px) and (max-height:1080px) {
+.nav-bar{
+  width: 100vw;
+  padding: 10px;
+}
+.nav-bar button{
+  padding: 4vw;
+}
+}
