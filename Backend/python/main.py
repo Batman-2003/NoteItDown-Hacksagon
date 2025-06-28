@@ -31,10 +31,11 @@ def init_db():
     """)
     
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users(
+        CREATE TABLE IF NOT EXISTS files(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
+            username TEXT,
             filename TEXT,
+            timestamp TEXT,
             data TEXT
         );
     """)
@@ -144,6 +145,15 @@ def login(form_data: CredentialsH):
     access_token = create_access_token(data={"sub": user["username"]})  # ? Learning
     return {"access_token": access_token, "token_type": "bearer"}
 
+
+class MyFileObject(BaseModel):
+    fileId: int
+    username: str
+    filename: str
+    filedata: str
+    timestamp: str
+
+
 # TODO: "/application"
 @api.post("/application/{userName}")
 def read_protected(token: str = Depends(oauth2_scheme), userName: str = ""):
@@ -157,3 +167,18 @@ def read_protected(token: str = Depends(oauth2_scheme), userName: str = ""):
     
     # TODO: Find all files of 
     return {"message": f"Hello, {username} / {userName}. Thou are allowed to proceed!"}
+
+
+
+# @api.post("/application")
+# def read_protected(token: str = Depends(oauth2_scheme)):
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         username = payload.get("sub")
+#         if username is None:
+#             raise HTTPException(status_code=401, detail="Invalid token")
+#     except JWTError:
+#             raise HTTPException(status_code=401, detail="Invalid token")
+    
+#     # TODO: Find all files of 
+#     return {"message": f"Hello, {username} . Thou are allowed to proceed!"}
