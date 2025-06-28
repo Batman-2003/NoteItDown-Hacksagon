@@ -2,6 +2,10 @@
 
 Video Demonstration Link: https://youtu.be/Pnv2gcdDqeE
 
+Team Members:
+1. Siddhant Alhat
+2. Gaurav Khaire
+
 ## Frontend Local Build Instructions:
   1. Open Frontend(inner) folder in a terminal
   2. Install libraries like remarkable, lucid-react, idb
