@@ -1,12 +1,13 @@
 import sqlite3
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import Optional
+import json
 
 api = FastAPI()
 
@@ -101,6 +102,7 @@ def authenticate_user(username: str, password: str):
         return None
     return user
 
+# TODO: take the entire request and pull token from header and convert body to dict
 # ? Learning
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -154,9 +156,37 @@ class MyFileObject(BaseModel):
     timestamp: str
 
 
+# # TODO: "/application"
+# @api.post("/application/{userName}")
+# def read_protected(token: str = Depends(oauth2_scheme), userName: str = ""):
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         username = payload.get("sub")
+#         if username is None:
+#             raise HTTPException(status_code=401, detail="Invalid token")
+#     except JWTError:
+#             raise HTTPException(status_code=401, detail="Invalid token")
+    
+#     # TODO: Find all files of 
+#     return {"message": f"Hello, {username} / {userName}. Thou are allowed to proceed!"}
+
 # TODO: "/application"
 @api.post("/application/{userName}")
-def read_protected(token: str = Depends(oauth2_scheme), userName: str = ""):
+async def read_protected(request: Request):
+    # Reading Message Headers
+    print((request.url.__str__()).split("/")[-1])
+    token = request.headers.get("authorization").split()[1]
+    
+
+    # Reading Message Body
+    body = await request.body()
+    bodyDict = json.loads(body.decode())
+    # TODO: get username, filedata, filename from body
+
+
+
+
+    # JWT Decoding
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
@@ -164,9 +194,70 @@ def read_protected(token: str = Depends(oauth2_scheme), userName: str = ""):
             raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
             raise HTTPException(status_code=401, detail="Invalid token")
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+'''
+    # Update routine
+    cursor.execute(f"""
+        INSERT INTO files(filedata, filename, username) VALUES('{filedata}', '{filename}', '{username}');
+    """)
+    conn.close()
+    return {"resp": "Updated Data"}
+'''
+
+
+
     
-    # TODO: Find all files of 
-    return {"message": f"Hello, {username} / {userName}. Thou are allowed to proceed!"}
+'''
+    # Update routine
+    # TODO: get username, filedata, filename from body
+    filedata = None
+    cursor.execute(f"""
+        UPDATE files SET filedata='{filedata}' WHERE username='{username}' AND filename='{filename}';
+    """)
+    conn.close()
+    return {"resp": "Updated Data"}
+'''
+
+
+'''
+    # Read routine
+    cursor.execute(f"""
+            SELECT * FROM files WHERE username='{username}';
+    """)
+    # conn.commit()
+
+    files = cursor.fetchall()
+    conn.close()
+
+    FILENAME_COLUMN_INDEX = 2
+    FILEDATA_COLUMN_INDEX = 4
+
+    filenames, filedatas = [], []
+
+    if len(files) > 0:
+        for fileinfo in files:
+            filenames.append(fileinfo[FILENAME_COLUMN_INDEX])
+            filedatas.append(fileinfo[FILEDATA_COLUMN_INDEX])
+    
+
+    else:
+        return {"Error": "No Files to read"}
+    
+    respObj = dict(zip(filenames, filedatas))
+
+    # * Only for Read
+    return {"data": respObj}
+
+'''
+
+    
+
+
+
+
 
 
 
