@@ -1,2 +1,8 @@
 # NoteItDown-Hacksagon
-Coding Repo for hacksagon
+Project Deployment Link: 
+
+Video Demonstration Link: 
+
+Frontend Local Build Instructions:
+
+Backend Local Build Instructions:
