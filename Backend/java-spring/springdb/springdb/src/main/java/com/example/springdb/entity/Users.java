@@ -7,29 +7,33 @@ import jakarta.persistence.*;
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="user_id")
+    @Column(name="idusers")
+    private Long idUser;
 
-    private int id;
+    @Column(name="username")
     private String username;
+
+    @Column(name="passwordHash")
     private String passwordHash;
 
+    // TODO: add/remove super() to ctor
     public Users() {
         super();
     }
 
-    public Users(int id, String username, String passwordHash) {
+    public Users(Long idUser, String username, String passwordHash) {
         super();
-        this.id = id;
+        this.idUser = idUser;
         this.username = username;
         this.passwordHash = passwordHash;
     }
 
-    public int getId() {
-        return id;
+    public Long getIdUser() {
+        return idUser;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setIdUser(Long idUser) {
+        this.idUser = idUser;
     }
 
     public String getUsername() {
@@ -50,8 +54,8 @@ public class Users {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
+        return "Users{" +
+                "idUser=" + idUser +
                 ", username='" + username + '\'' +
                 ", passwordHash='" + passwordHash + '\'' +
                 '}';
